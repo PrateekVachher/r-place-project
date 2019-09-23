@@ -1,6 +1,14 @@
 from generate_pcs import *
-import multiprocessing
+from generate_clusters import *
+import multiprocessing, pickle, os
 import pandas as pd
+from tqdm import tqdm
+
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+
 
 def ccs_score(x):
     result = []
@@ -14,22 +22,45 @@ def ccs_score(x):
     return result
 
 def calculate_ccs(pcs_matrix):
-    pool = multiprocessing.Pool(12)
+    pool = multiprocessing.Pool(num_cores)
     data = pool.map(ccs_score, range(2,len(pcs_matrix)-2))
     pool.close()
     return pd.DataFrame(data)
 
-frame_number = 0
+
+# - - - - - - - - - - - - - - Static Variables - - - - - -- - - - - - - - #
+
 time_24 = 1491065400
 time_window = 10 * 60                                  # In MINUTES
-level_1_ccs = 0.5
-level_2_ccs = 0.25
+level_1_ccs = 0.5 / 8
+level_2_ccs = 0.25 /16
+num_cores = 24
+dump_directory = "/home/srivbane/shared/caringbridge/data/projects/place-project/DataResults/"
 
-pcs_score = pd.DataFrame(index=[x for x in range(1001)], columns=[x for x in range(1001)]).fillna(0)
-start_time = time_24 + (frame_number)*60
+# - - - - - - - - - - - - - - Iterating over Minute Frames with Window Size 10 minutes - - - - - -- - - - - - - - #
 
-calculate_pcs_score(start_time, pcs_score)
+for frame_number in tqdm(range(800,801)):
+    pcs_score = pd.DataFrame(index=[x for x in range(1001)], columns=[x for x in range(1001)]).fillna(0)
+    
+    start_time = time_24 + (frame_number)*60
 
-result = calculate_ccs(pcs_score.values)
+    calculate_pcs_score(start_time, pcs_score)
 
-print (result)
+    ccs_result = calculate_ccs(pcs_score.values)
+    
+    
+    
+    newpath = "{}/CCSResults/hour-{}/".format(dump_directory, str(frame_number//60))
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+    
+    newpath = "{}/ClusterResults/hour-{}/".format(dump_directory, str(frame_number//60))
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+    
+    
+    pickle.dump(ccs_result, open("{}/CCSResults/hour-{}/ccs-{}.res".format(dump_directory, str(frame_number//60), str(frame_number).zfill(4)), "wb"))
+
+    conflict_regions = identify_conflicts(ccs_result)
+
+    pickle.dump(ccs_result, open("{}/ClusterResults/hour-{}/cluster-{}.res".format(dump_directory, str(frame_number//60), str(frame_number).zfill(4)), "wb"))
