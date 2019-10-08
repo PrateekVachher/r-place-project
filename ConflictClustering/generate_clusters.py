@@ -4,7 +4,7 @@ import scipy
 from tqdm import tqdm
 
 def identify_conflicts(df):
-    df = (df.values > 0.5).astype(int)
+    df = (df.values > 0.35).astype(int)
 
     region_id_counter = 0
 

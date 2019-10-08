@@ -32,14 +32,14 @@ def calculate_ccs(pcs_matrix):
 
 time_24 = 1491065400
 time_window = 10 * 60                                  # In MINUTES
-level_1_ccs = 0.5 / 8
-level_2_ccs = 0.25 /16
-num_cores = 6
+level_1_ccs = 0.5 / 4
+level_2_ccs = 0.25 / 8
+num_cores = 24
 dump_directory = "/home/srivbane/shared/caringbridge/data/projects/place-project/DataResults/"
 
 # - - - - - - - - - - - - - - Iterating over Minute Frames with Window Size 10 minutes - - - - - -- - - - - - - - #
 
-for frame_number in tqdm(range(0,10)):
+for frame_number in tqdm(range(870,900)):
     pcs_score = pd.DataFrame(index=[x for x in range(1001)], columns=[x for x in range(1001)]).fillna(0)
     
     start_time = time_24 + (frame_number)*60
