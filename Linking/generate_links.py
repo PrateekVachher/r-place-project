@@ -20,7 +20,7 @@ def load_to_memory(minute):
     
 def check_intersection(region1, region2):
     
-    similarity_threshold = 0.75
+    similarity_threshold = 0.25
     
     region1 = set(region1)
     region2 = set(region2)
@@ -35,7 +35,6 @@ def check_intersection(region1, region2):
 
 
 def compare_regions(initial_time):
-    
     t1 = initial_time
     t2 = initial_time+1
         
@@ -63,6 +62,6 @@ def compare_regions(initial_time):
     
     pickle.dump(links, open("{}/LinkingResults/hour-{}/links-{}.res".format(dump_directory, str(initial_time//60), str(initial_time).zfill(4)), "wb"))
     
-for x in range(380, 899):
-    compare_regions(x)
-
+pool = multiprocessing.Pool(24)
+data = pool.map(compare_regions, range(899))
+pool.close()
